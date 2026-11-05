@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Editor de PDF sencillo: reordena, gira, quita y separa páginas. Todo en tu ordenador." />
+    <title>PDF Fácil</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='5' y='2' width='22' height='28' rx='3' fill='%23c2410c'/><text x='16' y='21' font-size='9' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle'>PDF</text></svg>" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">PDF</span>
+        <span class="brand-name">PDF Fácil</span>
+      </div>
+      <p class="privacy">🔒 Tus documentos no salen de este ordenador</p>
+    </header>
+
+    <main>
+      <!-- Pantalla inicial -->
+      <section id="welcome" class="welcome">
+        <label id="dropzone" class="dropzone" for="file-input">
+          <span class="dz-icon" aria-hidden="true">📄</span>
+          <span class="dz-title">Arrastra aquí tu PDF</span>
+          <span class="dz-sub">o haz clic para elegirlo</span>
+        </label>
+        <input id="file-input" type="file" accept="application/pdf,.pdf" hidden />
+        <ul class="features">
+          <li>↕️ Cambiar el orden de las páginas</li>
+          <li>🗑️ Quitar páginas</li>
+          <li>↻ Girar páginas</li>
+          <li>✂️ Sacar unas páginas a un PDF aparte</li>
+        </ul>
+      </section>
+
+      <!-- Editor -->
+      <section id="editor" class="editor" hidden>
+        <div class="toolbar" role="toolbar" aria-label="Acciones">
+          <div class="file-info">
+            <strong id="file-name"></strong>
+            <span id="page-count" class="muted"></span>
+          </div>
+          <div class="actions">
+            <button id="btn-undo" class="btn" disabled title="Deshacer (Ctrl+Z)">↶ Deshacer</button>
+            <button id="btn-open" class="btn">Abrir otro PDF</button>
+            <button id="btn-download" class="btn btn-primary">⬇ Descargar PDF</button>
+          </div>
+        </div>
+
+        <div class="selection-bar">
+          <span id="selection-info" class="muted">Haz clic en las páginas para seleccionarlas. Arrástralas para cambiar el orden.</span>
+          <div class="actions">
+            <button id="btn-select-all" class="btn btn-small">Seleccionar todas</button>
+            <button id="btn-select-none" class="btn btn-small" disabled>Quitar selección</button>
+            <button id="btn-rotate-sel" class="btn btn-small" disabled>↻ Girar</button>
+            <button id="btn-delete-sel" class="btn btn-small btn-danger" disabled>🗑 Quitar</button>
+            <button id="btn-extract-sel" class="btn btn-small" disabled title="Descarga un PDF nuevo solo con las páginas seleccionadas">✂ Sacar a un PDF aparte</button>
+          </div>
+        </div>
+
+        <div id="grid" class="grid" aria-label="Páginas del documento"></div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <div id="loading" class="loading" hidden><div class="spinner"></div><span>Abriendo PDF…</span></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
