@@ -19,5 +19,8 @@
     "vitest": "^5.1.0"
   },
   "type": "module",
-  "private": "true"
+  "private": "true",
+  "engines": {
+    "node": ">=20.19.0"
+  }
 }

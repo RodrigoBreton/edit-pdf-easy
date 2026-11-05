@@ -13,6 +13,8 @@ Siempre se descarga una copia nueva; el PDF original no se modifica.
 
 ## Desarrollo
 
+Necesitas **Node 20.19 o superior** (recomendado 22; con nvm basta `nvm use`).
+
 ```bash
 npm install
 npm run dev      # abre http://localhost:5173
