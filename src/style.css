@@ -130,7 +130,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
   padding: 10px 14px; margin-bottom: 20px;
 }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(224px, 1fr)); gap: 18px; }
 
 .card {
   position: relative; background: var(--surface); border: 2px solid transparent; border-radius: var(--radius);
@@ -144,8 +144,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
   max-width: 150px; max-height: 150px; width: auto; height: auto;
   background: white; box-shadow: 0 0 0 1px var(--line); transition: transform 0.2s;
 }
-.card .meta { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-.card .num { font-weight: 600; }
+/* Si el número y los botones no caben en una fila, los botones bajan en vez de pisar el número. */
+.card .meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; width: 100%; }
+.card .num { font-weight: 600; font-size: 15px; white-space: nowrap; }
 .card .tools { display: flex; gap: 4px; }
 .icon-btn {
   font: inherit; width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line);
