@@ -62,9 +62,9 @@ Abrir (clic o arrastrar a cualquier parte de la ventana), miniaturas, selecciona
 reordenar arrastrando, girar, quitar (botón, tecla Supr/Retroceso), "Sacar a un PDF aparte" con las
 seleccionadas, descargar, deshacer. Mensajes de error para PDFs no válidos o con contraseña.
 
-### ✅ Fase 2 — Editar fecha/valor (hecha en local, pendiente de prueba de Rodro)
+### ✅ Fase 2 — Editar fecha/valor (hecha, desplegada, probada y aprobada por Rodro)
 Enfoque: **tapar y escribir encima** (el texto original sigue en el PDF debajo del parche: se ve tapado,
-pero se podría copiar/buscar). Vista ampliada (doble clic o ✎ en la miniatura) con tres herramientas:
+pero se podría copiar/buscar). Vista ampliada (doble clic o el botón del lápiz en la miniatura) con tres herramientas:
 - **Cambiar texto**: clic sobre un texto → se tapa con el color de fondo muestreado del canvas y aparece
   una caja con el texto original; se adivinan tamaño, color, Helvetica/Times y negrita.
   `buildTextRuns` une trozos pegados (PDFs que dibujan letra a letra).
