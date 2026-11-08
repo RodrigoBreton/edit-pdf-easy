@@ -39,6 +39,10 @@ Todo ocurre en el navegador: los PDFs nunca se suben a ningún servidor.
   colores fijos en componentes (salvo el blanco de las páginas, que es papel). Un script en `index.html`
   pone `data-theme` antes de pintar; la elección se guarda en `localStorage` (`pdf-facil-theme`).
   Lógica en `src/core/theme.ts`, botón en `src/themeSwitch.ts`.
+- Iconos: **Phosphor regular** (MIT, solo trazo), copiados como trazados SVG en `src/icons.ts` (sin librería ni fuente).
+  En código: `icon('trash')`; en `index.html`: `<span data-icon="trash"></span>`, que `hydrateIcons()` cambia
+  al arrancar. El trazo va en `--icon-color` (naranja); sobre fondos de color o en rojo toma el color del texto.
+  Nada de emojis en la interfaz: cada sistema los pinta distinto.
 - `.github/workflows/deploy.yml`: en cada push a `main` ejecuta `npm ci`, `npm test`, `npm run build`
   y publica `dist/` en GitHub Pages. Si fallan los tests, no se publica.
 - `vite.config.ts` usa `base: './'` para que funcione bajo `/edit-pdf-easy/`.

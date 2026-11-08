@@ -11,6 +11,7 @@
  * clic fuera, botón Hecho, cambiar de página...) se guarda con un único
  * `commit`, así "Deshacer" lo deshace de una vez.
  */
+import { icon } from '../icons';
 import type { PDFDocumentProxy, PageViewport, RenderTask } from 'pdfjs-dist';
 import type { PageRef } from '../core/pages';
 import { setOverlays } from '../core/pages';
@@ -286,7 +287,7 @@ export function createPageEditor(host: EditorHost) {
       handle.className = 'ov-handle';
       handle.title = 'Arrastra para mover';
       handle.setAttribute('aria-label', 'Mover');
-      handle.textContent = '✥';
+      handle.innerHTML = icon('move');
       handle.addEventListener('pointerdown', (e) => startMove(e, wrap));
       box.appendChild(handle);
     }
@@ -633,8 +634,8 @@ export function createPageEditor(host: EditorHost) {
       <label class="pp-color" title="Otro color"><input type="color" data-prop="color" aria-label="Otro color" /></label>
     </div>
     <label class="pp-bg" title="Color del parche que tapa el fondo">Fondo <input type="color" data-prop="bg" /></label>
-    <button type="button" class="pp-btn pp-danger" data-prop="remove" title="Quitar este texto">🗑 Quitar</button>
-    <button type="button" class="pp-btn pp-done" data-prop="done">✓ Hecho</button>`;
+    <button type="button" class="pp-btn pp-danger" data-prop="remove" title="Quitar este texto">${icon('trash')} Quitar</button>
+    <button type="button" class="pp-btn pp-done" data-prop="done">${icon('check')} Hecho</button>`;
 
   // Que pulsar los botones no quite el foco del texto.
   props.addEventListener('pointerdown', (e) => {

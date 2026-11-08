@@ -1,4 +1,5 @@
 import './style.css';
+import { hydrateIcons, icon } from './icons';
 import Sortable from 'sortablejs';
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
 import { openPdf, paintOverlays, renderThumbnail, type OpenedPdf } from './core/render';
@@ -41,6 +42,8 @@ const thumbs = new Map<string, Thumb>();
 
 // ---------- DOM ----------
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+// Los iconos del HTML estático son <span data-icon>: se cambian por su SVG al arrancar.
+hydrateIcons();
 setupThemeSwitch($<HTMLButtonElement>('theme-switch'));
 const welcome = $('welcome');
 const editor = $('editor');
@@ -172,15 +175,15 @@ function createCard(page: PageRef): HTMLElement {
   card.dataset.id = page.id;
   card.tabIndex = 0;
   card.innerHTML = `
-    <span class="check" aria-hidden="true">✓</span>
-    <span class="badge" title="Tiene textos cambiados" hidden>✎ editada</span>
+    <span class="check" aria-hidden="true">${icon('check')}</span>
+    <span class="badge" title="Tiene textos cambiados" hidden>${icon('edit')} editada</span>
     <div class="thumb"><canvas></canvas></div>
     <div class="meta">
       <span class="num"></span>
       <div class="tools">
-        <button class="icon-btn" data-action="edit" title="Cambiar texto de esta página">✎</button>
-        <button class="icon-btn" data-action="rotate" title="Girar">↻</button>
-        <button class="icon-btn danger" data-action="delete" title="Quitar página">🗑</button>
+        <button class="icon-btn" data-action="edit" title="Cambiar texto de esta página">${icon('edit')}</button>
+        <button class="icon-btn" data-action="rotate" title="Girar">${icon('rotate')}</button>
+        <button class="icon-btn danger" data-action="delete" title="Quitar página">${icon('trash')}</button>
       </div>
     </div>`;
 
@@ -268,7 +271,7 @@ async function download(pages: PageRef[], suffix: string): Promise<void> {
     const bytes = await buildPdf(state.bytes, pages);
     downloadBytes(bytes, outputName(state.fileName, suffix));
     if (pages === state.pages) state.dirty = false;
-    toast('PDF descargado ✔');
+    toast('PDF descargado');
   } catch (err) {
     console.error(err);
     toast('No se ha podido generar el PDF.', 'error');
