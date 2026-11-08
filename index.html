@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Editor de PDF sencillo: cambia una fecha o un dato, reordena, gira, quita y separa páginas. Todo en tu ordenador." />
     <title>PDF Fácil</title>
+    <!-- Tema antes de pintar: oscuro salvo que se eligiera el claro (evita un destello claro). -->
+    <script>
+      try { document.documentElement.dataset.theme = localStorage.getItem('pdf-facil-theme') === 'light' ? 'light' : 'dark'; }
+      catch { document.documentElement.dataset.theme = 'dark'; }
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='5' y='2' width='22' height='28' rx='3' fill='%23c2410c'/><text x='16' y='21' font-size='9' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle'>PDF</text></svg>" />
   </head>
   <body>
@@ -13,7 +18,18 @@
         <span class="logo" aria-hidden="true">PDF</span>
         <span class="brand-name">PDF Fácil</span>
       </div>
-      <p class="privacy">🔒 Tus documentos no salen de este ordenador</p>
+      <div class="topbar-right">
+        <p class="privacy">🔒 Tus documentos no salen de este ordenador</p>
+        <button id="theme-switch" class="theme-switch" type="button" role="switch" aria-checked="true" aria-label="Modo oscuro">
+          <span class="ts-icon ts-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          </span>
+          <span class="ts-icon ts-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z"/></svg>
+          </span>
+          <span class="ts-knob" aria-hidden="true"></span>
+        </button>
+      </div>
     </header>
 
     <main>

@@ -34,6 +34,11 @@ Todo ocurre en el navegador: los PDFs nunca se suben a ningún servidor.
   - Cada cambio pasa por `commit(nextPages)` (guarda historial, marca `dirty` y re-renderiza).
   - Las tarjetas se cachean por id en `cards`: al reordenar o deshacer solo se mueven nodos del DOM,
     no se vuelven a pintar las miniaturas. La rotación en pantalla es un `transform` CSS.
+- Tema: **oscuro "medianoche" por defecto**, claro opcional con el interruptor sol/luna de la barra superior.
+  Todos los colores son variables CSS en `:root` (claro) y `:root[data-theme='dark']` (oscuro); no usar
+  colores fijos en componentes (salvo el blanco de las páginas, que es papel). Un script en `index.html`
+  pone `data-theme` antes de pintar; la elección se guarda en `localStorage` (`pdf-facil-theme`).
+  Lógica en `src/core/theme.ts`, botón en `src/themeSwitch.ts`.
 - `.github/workflows/deploy.yml`: en cada push a `main` ejecuta `npm ci`, `npm test`, `npm run build`
   y publica `dist/` en GitHub Pages. Si fallan los tests, no se publica.
 - `vite.config.ts` usa `base: './'` para que funcione bajo `/edit-pdf-easy/`.

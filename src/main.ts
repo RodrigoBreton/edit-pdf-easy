@@ -3,6 +3,7 @@ import Sortable from 'sortablejs';
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
 import { openPdf, paintOverlays, renderThumbnail, type OpenedPdf } from './core/render';
 import { createPageEditor } from './editor/pageEditor';
+import { setupThemeSwitch } from './themeSwitch';
 import type { TextOverlay } from './core/overlays';
 import { buildPdf, downloadBytes, outputName } from './core/exportPdf';
 import {
@@ -40,6 +41,7 @@ const thumbs = new Map<string, Thumb>();
 
 // ---------- DOM ----------
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+setupThemeSwitch($<HTMLButtonElement>('theme-switch'));
 const welcome = $('welcome');
 const editor = $('editor');
 const dropzone = $('dropzone');
