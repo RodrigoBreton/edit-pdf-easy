@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Editor de PDF sencillo: reordena, gira, quita y separa páginas. Todo en tu ordenador." />
+    <meta name="description" content="Editor de PDF sencillo: cambia una fecha o un dato, reordena, gira, quita y separa páginas. Todo en tu ordenador." />
     <title>PDF Fácil</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='5' y='2' width='22' height='28' rx='3' fill='%23c2410c'/><text x='16' y='21' font-size='9' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle'>PDF</text></svg>" />
   </head>
@@ -26,6 +26,7 @@
         </label>
         <input id="file-input" type="file" accept="application/pdf,.pdf" hidden />
         <ul class="features">
+          <li>✏️ Cambiar una fecha o un dato</li>
           <li>↕️ Cambiar el orden de las páginas</li>
           <li>🗑️ Quitar páginas</li>
           <li>↻ Girar páginas</li>
@@ -47,8 +48,9 @@
           </div>
         </div>
 
+        <div id="pages-view">
         <div class="selection-bar">
-          <span id="selection-info" class="muted">Haz clic en las páginas para seleccionarlas. Arrástralas para cambiar el orden.</span>
+          <span id="selection-info" class="muted">Haz clic en las páginas para seleccionarlas. Arrástralas para cambiar el orden. Doble clic para cambiar su texto.</span>
           <div class="actions">
             <button id="btn-select-all" class="btn btn-small">Seleccionar todas</button>
             <button id="btn-select-none" class="btn btn-small" disabled>Quitar selección</button>
@@ -59,6 +61,36 @@
         </div>
 
         <div id="grid" class="grid" aria-label="Páginas del documento"></div>
+        </div>
+
+        <!-- Vista ampliada para cambiar texto -->
+        <div id="page-editor" class="page-editor" hidden>
+          <div id="pe-head" class="pe-head">
+            <div class="pe-row">
+              <button id="pe-back" class="btn">← Volver a las páginas</button>
+              <div class="pe-nav">
+                <button id="pe-prev" class="btn" title="Página anterior" aria-label="Página anterior">‹</button>
+                <span id="pe-title" class="pe-title"></span>
+                <button id="pe-next" class="btn" title="Página siguiente" aria-label="Página siguiente">›</button>
+              </div>
+            </div>
+            <div class="pe-row">
+              <div class="pe-tools" role="group" aria-label="Herramienta">
+                <button class="btn tool" data-mode="replace">✎ Cambiar texto</button>
+                <button class="btn tool" data-mode="add">＋ Añadir texto</button>
+                <button class="btn tool" data-mode="cover">▭ Tapar zona</button>
+              </div>
+              <span id="pe-hint" class="pe-hint"></span>
+            </div>
+          </div>
+          <div id="pe-stage" class="pe-stage">
+            <div id="pe-page" class="pe-page">
+              <canvas id="pe-canvas"></canvas>
+              <div id="pe-layer" class="pe-layer"></div>
+              <div id="pe-props" class="pe-props" role="toolbar" aria-label="Ajustes del texto" hidden></div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 

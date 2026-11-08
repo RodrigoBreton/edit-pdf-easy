@@ -1,7 +1,9 @@
 import './style.css';
 import Sortable from 'sortablejs';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-import { openPdf, renderThumbnail, type OpenedPdf } from './core/render';
+import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
+import { openPdf, paintOverlays, renderThumbnail, type OpenedPdf } from './core/render';
+import { createPageEditor } from './editor/pageEditor';
+import type { TextOverlay } from './core/overlays';
 import { buildPdf, downloadBytes, outputName } from './core/exportPdf';
 import {
   History,
@@ -28,6 +30,13 @@ let state: State | null = null;
 const history = new History<PageRef[]>();
 /** Tarjetas ya creadas, para no volver a renderizar miniaturas al reordenar. */
 const cards = new Map<string, HTMLElement>();
+/** Miniatura sin textos añadidos, para poder volver a pintarlos encima al cambiar. */
+interface Thumb {
+  viewport: PageViewport;
+  pristine: HTMLCanvasElement;
+  painted: TextOverlay[] | null;
+}
+const thumbs = new Map<string, Thumb>();
 
 // ---------- DOM ----------
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -41,6 +50,7 @@ const pageCountEl = $('page-count');
 const selectionInfo = $('selection-info');
 const toastEl = $('toast');
 const loadingEl = $('loading');
+const pagesView = $('pages-view');
 
 const btn = {
   undo: $<HTMLButtonElement>('btn-undo'),
@@ -71,7 +81,7 @@ async function loadFile(file: File): Promise<void> {
     toast('Ese archivo no es un PDF.', 'error');
     return;
   }
-  if (state?.dirty && !confirm('Tienes cambios sin descargar. ¿Abrir otro PDF de todas formas?')) {
+  if ((state?.dirty || pageEditor.hasDraft) && !confirm('Tienes cambios sin descargar. ¿Abrir otro PDF de todas formas?')) {
     return;
   }
 
@@ -79,6 +89,7 @@ async function loadFile(file: File): Promise<void> {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const { doc, close } = await openPdf(bytes);
+    pageEditor.close();
     state?.close();
     state = {
       fileName: file.name,
@@ -91,6 +102,7 @@ async function loadFile(file: File): Promise<void> {
     };
     history.clear();
     cards.clear();
+    thumbs.clear();
     grid.innerHTML = '';
     welcome.hidden = true;
     editor.hidden = false;
@@ -121,6 +133,11 @@ function commit(nextPages: PageRef[]): void {
 
 function undo(): void {
   if (!state) return;
+  // Si se está escribiendo un texto, "Deshacer" lo descarta.
+  if (pageEditor.cancelDraft()) {
+    toast('Texto descartado');
+    return;
+  }
   const prev = history.pop();
   if (!prev) return;
   state.pages = prev;
@@ -154,10 +171,12 @@ function createCard(page: PageRef): HTMLElement {
   card.tabIndex = 0;
   card.innerHTML = `
     <span class="check" aria-hidden="true">✓</span>
+    <span class="badge" title="Tiene textos cambiados" hidden>✎ editada</span>
     <div class="thumb"><canvas></canvas></div>
     <div class="meta">
       <span class="num"></span>
       <div class="tools">
+        <button class="icon-btn" data-action="edit" title="Cambiar texto de esta página">✎</button>
         <button class="icon-btn" data-action="rotate" title="Girar">↻</button>
         <button class="icon-btn danger" data-action="delete" title="Quitar página">🗑</button>
       </div>
@@ -165,9 +184,32 @@ function createCard(page: PageRef): HTMLElement {
 
   const canvas = card.querySelector('canvas')!;
   if (state) {
-    renderThumbnail(state.doc, page.sourceIndex, canvas).catch((e) => console.error(e));
+    const doc = state.doc;
+    renderThumbnail(doc, page.sourceIndex, canvas)
+      .then((viewport) => {
+        if (state?.doc !== doc) return;
+        const pristine = document.createElement('canvas');
+        pristine.width = canvas.width;
+        pristine.height = canvas.height;
+        pristine.getContext('2d')!.drawImage(canvas, 0, 0);
+        thumbs.set(page.id, { viewport, pristine, painted: null });
+        const current = state.pages.find((p) => p.id === page.id);
+        if (current) updateThumb(current, canvas);
+      })
+      .catch((e) => console.error(e));
   }
   return card;
+}
+
+/** Pinta en la miniatura los textos añadidos (solo si han cambiado). */
+function updateThumb(page: PageRef, canvas: HTMLCanvasElement): void {
+  const thumb = thumbs.get(page.id);
+  if (!thumb || thumb.painted === page.overlays) return;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(thumb.pristine, 0, 0);
+  paintOverlays(canvas, thumb.viewport, page.overlays);
+  thumb.painted = page.overlays;
 }
 
 function render(): void {
@@ -188,6 +230,8 @@ function render(): void {
     card.setAttribute('aria-pressed', String(selected.has(page.id)));
     const canvas = card.querySelector('canvas')!;
     canvas.style.transform = page.rotation ? `rotate(${page.rotation}deg)` : '';
+    updateThumb(page, canvas);
+    card.querySelector<HTMLElement>('.badge')!.hidden = page.overlays.length === 0;
     grid.appendChild(card); // appendChild mueve el nodo si ya existe
   });
   for (const [id, card] of cards) {
@@ -201,7 +245,7 @@ function render(): void {
   const n = selected.size;
   selectionInfo.textContent =
     n === 0
-      ? 'Haz clic en las páginas para seleccionarlas. Arrástralas para cambiar el orden.'
+      ? 'Haz clic en las páginas para seleccionarlas. Arrástralas para cambiar el orden. Doble clic para cambiar su texto.'
       : `${plural(n, 'página seleccionada', 'páginas seleccionadas')}`;
 
   btn.undo.disabled = !history.canUndo;
@@ -210,6 +254,8 @@ function render(): void {
   btn.rotateSel.disabled = n === 0;
   btn.deleteSel.disabled = n === 0;
   btn.extractSel.disabled = n === 0;
+
+  if (pageEditor.isOpen && !pageEditor.hasDraft) pageEditor.refresh();
 }
 
 // ---------- Descargas ----------
@@ -228,6 +274,18 @@ async function download(pages: PageRef[], suffix: string): Promise<void> {
     btn.download.disabled = false;
   }
 }
+
+// ---------- Editor de texto ----------
+const pageEditor = createPageEditor({
+  getDoc: () => state?.doc ?? null,
+  getPages: () => state?.pages ?? [],
+  commit,
+  toast,
+  onToggle: (open) => {
+    pagesView.hidden = open;
+    if (!open) render();
+  },
+});
 
 // ---------- Eventos ----------
 dropzone.addEventListener('dragover', (e) => {
@@ -259,7 +317,11 @@ fileInput.addEventListener('change', () => {
 
 btn.open.addEventListener('click', () => fileInput.click());
 btn.undo.addEventListener('click', undo);
-btn.download.addEventListener('click', () => state && download(state.pages, 'editado'));
+btn.download.addEventListener('click', () => {
+  if (!state) return;
+  pageEditor.flush(); // guardar el texto que se esté escribiendo
+  download(state.pages, 'editado');
+});
 btn.selectAll.addEventListener('click', () => {
   if (!state) return;
   state.selected = new Set(state.pages.map((p) => p.id));
@@ -284,9 +346,16 @@ grid.addEventListener('click', (e) => {
   if (!card) return;
   const id = card.dataset.id!;
   const action = target.closest<HTMLElement>('[data-action]')?.dataset.action;
-  if (action === 'rotate') commit(rotatePages(state.pages, new Set([id])));
+  if (action === 'edit') pageEditor.open(id);
+  else if (action === 'rotate') commit(rotatePages(state.pages, new Set([id])));
   else if (action === 'delete') deletePages(new Set([id]));
   else toggleSelect(id);
+});
+
+grid.addEventListener('dblclick', (e) => {
+  const card = (e.target as HTMLElement).closest<HTMLElement>('.card');
+  if (!card || (e.target as HTMLElement).closest('[data-action]')) return;
+  pageEditor.open(card.dataset.id!);
 });
 
 grid.addEventListener('keydown', (e) => {
@@ -299,11 +368,14 @@ grid.addEventListener('keydown', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if (!state) return;
-  const tag = (e.target as HTMLElement).tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const el = e.target as HTMLElement;
+  // Mientras se escribe, Ctrl+Z y Retroceso son del propio texto.
+  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable) return;
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
     e.preventDefault();
     undo();
+  } else if (pageEditor.isOpen) {
+    return;
   } else if ((e.key === 'Delete' || e.key === 'Backspace') && state.selected.size) {
     e.preventDefault();
     deletePages(new Set(state.selected));
@@ -323,5 +395,5 @@ Sortable.create(grid, {
 });
 
 window.addEventListener('beforeunload', (e) => {
-  if (state?.dirty) e.preventDefault();
+  if (state?.dirty || pageEditor.hasDraft) e.preventDefault();
 });

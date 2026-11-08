@@ -5,6 +5,8 @@
  * lista de "referencias" a sus páginas (qué página original es y cuánto está
  * rotada). Solo al descargar generamos un PDF nuevo con pdf-lib.
  */
+import type { TextOverlay } from './overlays';
+
 export interface PageRef {
   /** Identificador estable para la UI (no cambia al reordenar). */
   id: string;
@@ -12,6 +14,8 @@ export interface PageRef {
   sourceIndex: number;
   /** Rotación añadida por el usuario, en grados: 0, 90, 180 o 270. */
   rotation: number;
+  /** Textos y parches añadidos encima de la página (fase 2). */
+  overlays: TextOverlay[];
 }
 
 let counter = 0;
@@ -22,6 +26,7 @@ export function createPages(pageCount: number): PageRef[] {
     id: newId(),
     sourceIndex: i,
     rotation: 0,
+    overlays: [],
   }));
 }
 
@@ -47,6 +52,10 @@ export function rotatePages(pages: PageRef[], ids: Set<string>, delta = 90): Pag
 
 export function pickPages(pages: PageRef[], ids: Set<string>): PageRef[] {
   return pages.filter((p) => ids.has(p.id));
+}
+
+export function setOverlays(pages: PageRef[], id: string, overlays: TextOverlay[]): PageRef[] {
+  return pages.map((p) => (p.id === id ? { ...p, overlays } : p));
 }
 
 /** Historial simple para "Deshacer". */

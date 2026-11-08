@@ -53,19 +53,21 @@ Abrir (clic o arrastrar a cualquier parte de la ventana), miniaturas, selecciona
 reordenar arrastrando, girar, quitar (botón, tecla Supr/Retroceso), "Sacar a un PDF aparte" con las
 seleccionadas, descargar, deshacer. Mensajes de error para PDFs no válidos o con contraseña.
 
-### ⏳ Fase 2 — Editar fecha/valor (la siguiente)
-Enfoque acordado con Rodro: **tapar y escribir encima**, no editar el texto original del PDF.
-Propuesta de diseño:
-- Vista ampliada de una página (doble clic en la miniatura o botón "Editar texto").
-- El usuario dibuja un rectángulo sobre la zona → se rellena con el color de fondo (por defecto blanco;
-  ideal: muestrear el color del canvas en esa zona) → caja de texto encima.
-- Ajustes mínimos: tamaño de letra, negrita, color (negro por defecto), fuente Helvetica/Times.
-  Mejora: proponer un tamaño de letra según la altura de la zona tapada.
-- Modelo: añadir `overlays` por `PageRef` (coordenadas en puntos PDF, no en píxeles) y que
-  `buildPdf` los dibuje con `page.drawRectangle` + `page.drawText`. Ojo con las páginas rotadas
-  al convertir coordenadas, y con caracteres fuera de WinAnsi (las fuentes estándar de pdf-lib
-  no los soportan; € y tildes sí, otros no).
-- Deben entrar en el historial de deshacer y poder moverse/borrarse antes de descargar.
+### ✅ Fase 2 — Editar fecha/valor (hecha en local, pendiente de prueba de Rodro)
+Enfoque: **tapar y escribir encima** (el texto original sigue en el PDF debajo del parche: se ve tapado,
+pero se podría copiar/buscar). Vista ampliada (doble clic o ✎ en la miniatura) con tres herramientas:
+- **Cambiar texto**: clic sobre un texto → se tapa con el color de fondo muestreado del canvas y aparece
+  una caja con el texto original; se adivinan tamaño, color, Helvetica/Times y negrita.
+  `buildTextRuns` une trozos pegados (PDFs que dibujan letra a letra).
+- **Añadir texto**: clic en un hueco, sin fondo. **Tapar zona**: arrastrar un rectángulo (PDFs escaneados),
+  tamaño de letra propuesto según la altura.
+- Panel flotante: tamaño, negrita, fuente, color, color del parche, Quitar, Hecho. Asa ✥ para mover.
+- Modelo: `PageRef.overlays: TextOverlay[]` (`src/core/overlays.ts`), en coordenadas del PDF (puntos,
+  sin rotación de página) y con `angle` para que el texto quede derecho en la vista donde se escribió.
+  `buildPdf` los dibuja con `drawRectangle` + `drawText`. Caracteres fuera de WinAnsi se quitan con aviso.
+- Mientras se escribe es un "borrador"; se guarda con un solo `commit` (Intro, Hecho, clic fuera, cambiar
+  de página, descargar). Escape o Deshacer lo descartan.
+- UI en `src/editor/pageEditor.ts`; las miniaturas pintan los textos encima (`paintOverlays`).
 
 ### ⏳ Fase 3 — Firma
 Dibujar con ratón/dedo o subir imagen (PNG con fondo transparente), guardarla en `localStorage`
